@@ -2,8 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 import streamlit as st
-from matplotlib.animation import FuncAnimation, PillowWriter
-from IPython.display import HTML
+from matplotlib.animation import FuncAnimation
 
 # Constants
 g = 9.81  # Acceleration due to gravity (m/s^2)
@@ -70,11 +69,11 @@ def animate_double_pendulum(solution, L1, L2):
         return line, trace1, trace2
     
     ani = FuncAnimation(fig, update, frames=range(len(x1)), init_func=init, blit=True, interval=20)
-    return ani
+    return ani.to_jshtml()
 
 # Streamlit App
 st.title('Double Pendulum Simulation')
-
+st.subtitle('Wait for the animation to be compiled! It might take up to a few minutes.')
 theta1_initial = st.slider('Theta1 Initial (radians)', 0.0, 2 * np.pi, np.pi / 2)
 theta2_initial = st.slider('Theta2 Initial (radians)', 0.0, 2 * np.pi, np.pi / 2)
 L1 = st.number_input('Length 1 (m)', min_value=0.1, value=1.0, step=0.1)
@@ -89,6 +88,6 @@ if st.button('Simulate'):
     
     solution = simulate_double_pendulum(y0, t_span, t_eval, L1, L2, m1, m2)
     plot_double_pendulum(solution, L1, L2)
-    ani = animate_double_pendulum(solution, L1, L2)
-    ani_html = ani.to_jshtml()
-    st.components.v1.html(ani_html, height=700)
+    
+    ani_html = animate_double_pendulum(solution, L1, L2)
+    st.components.v1.html(ani_html, height=800, width=1000)

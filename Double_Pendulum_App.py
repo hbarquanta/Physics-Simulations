@@ -33,8 +33,6 @@ def plot_double_pendulum(solution, L1, L2):
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.plot(x1, y1, 'r-', label='Pendulum 1', lw=2)
     ax.plot(x2, y2, 'b-', label='Pendulum 2', lw=2)
-    ax.scatter(x1, y1, c='r', s=50, label='Mass 1')
-    ax.scatter(x2, y2, c='b', s=50, label='Mass 2')
     ax.legend()
     ax.set_xlabel('X Position')
     ax.set_ylabel('Y Position')

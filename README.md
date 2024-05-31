@@ -1,4 +1,3 @@
-
 # Physics Simulations
 
 ## Overview
@@ -58,16 +57,18 @@ Open the notebook you are interested in from the Jupyter interface.
 
 ### Cellular Automata
 - **Celular Automata.ipynb**: This notebook explores cellular automata, including the Game of Life, illustrating how simple rules can lead to complex behaviors.
+  - **Animations**: View the animations [here](https://github.com/hbarquanta/Physics-Simulations/tree/main/Animations).
 
 ### Double Pendulum
 - **[Double Pendulum Application](applications/double_pendulum/Double_Pendulum_App.py)**: This application simulates the motion of a double pendulum.
-
   - **How to Run:**
     ```bash
     cd applications/double_pendulum
     pip install -r requirements.txt
     streamlit run Double_Pendulum_App.py
     ```
+  - **Live Demo**: Check out the live demo [here](https://physics-simulations-doublependulum.streamlit.app/).
+  - **Animations**: View the animations [here](https://github.com/hbarquanta/Physics-Simulations/tree/main/Animations).
 
 ## Contributing
 Contributions are welcome! If you would like to improve the simulations or add new ones, please fork the repository and submit a pull request. For major changes, please open an issue first to discuss what you would like to change.

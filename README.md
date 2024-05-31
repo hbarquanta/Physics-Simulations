@@ -60,7 +60,8 @@ Open the notebook you are interested in from the Jupyter interface.
   - **Animations**: View the animations [here](https://github.com/hbarquanta/Physics-Simulations/tree/main/Animations/automata_simulation.gif).
 
 ### Double Pendulum
-- **[Double Pendulum Application](applications/double_pendulum/Double_Pendulum_App.py)**: This application simulates the motion of a double pendulum.
+- **Double_Pendulum.ipynb**: This notebook describes the theoretical framework of the (chaotic) Double Pendulum, explores how a slight change of initial conditions leads to completely different solution after a certain time span i.e. chaotic behaviour and also includes the basic code for the standalone application.
+- **[Double Pendulum Application](Applications/Double_Pendulum/Double_Pendulum_App.py)**: This application simulates the motion of a double pendulum.
   - **How to Run:**
     ```bash
     cd applications/double_pendulum

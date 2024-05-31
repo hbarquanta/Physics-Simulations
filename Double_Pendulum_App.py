@@ -73,7 +73,6 @@ def animate_double_pendulum(solution, L1, L2):
 
 # Streamlit App
 st.title('Double Pendulum Simulation')
-st.subtitle('Wait for the animation to be compiled! It might take up to a few minutes.')
 theta1_initial = st.slider('Theta1 Initial (radians)', 0.0, 2 * np.pi, np.pi / 2)
 theta2_initial = st.slider('Theta2 Initial (radians)', 0.0, 2 * np.pi, np.pi / 2)
 L1 = st.number_input('Length 1 (m)', min_value=0.1, value=1.0, step=0.1)

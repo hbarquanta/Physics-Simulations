@@ -1,22 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
-import ipywidgets as widgets
-from IPython.display import display
+import streamlit as st
 
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = 'Times New Roman'
-plt.rcParams['font.size'] = 14
-plt.rcParams['axes.linewidth'] = 1
-plt.rcParams['lines.linewidth'] = 1.5
-plt.rcParams['lines.markersize'] = 5
-plt.rcParams['xtick.direction'] = 'in'
-plt.rcParams['ytick.direction'] = 'in'
-plt.rcParams['xtick.major.size'] = 5   
-plt.rcParams['ytick.major.size'] = 5   
-plt.rcParams['xtick.major.width'] = 1   
-plt.rcParams['ytick.major.width'] = 1   
-plt.rcParams['legend.fontsize'] = 14
 # Constants
 g = 9.81  # Acceleration due to gravity (m/s^2)
 
@@ -42,47 +28,32 @@ def plot_double_pendulum(solution, L1, L2):
     x2 = x1 + L2 * np.sin(theta2)
     y2 = y1 - L2 * np.cos(theta2)
     
-    plt.figure(figsize=(10, 6))
-    plt.plot(x1, y1, 'r-', label='Pendulum 1', lw=2)
-    plt.plot(x2, y2, 'b-', label='Pendulum 2', lw=2)
-    plt.legend()
-    plt.xlabel('X Position')
-    plt.ylabel('Y Position')
-    plt.title('Double Pendulum Simulation')
-    plt.grid(True, linestyle='--', alpha=0.7)
-    plt.show()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(x1, y1, 'r-', label='Pendulum 1', lw=2)
+    ax.plot(x2, y2, 'b-', label='Pendulum 2', lw=2)
+    ax.scatter(x1, y1, c='r', s=50, label='Mass 1')
+    ax.scatter(x2, y2, c='b', s=50, label='Mass 2')
+    ax.legend()
+    ax.set_xlabel('X Position')
+    ax.set_ylabel('Y Position')
+    ax.set_title('Double Pendulum Simulation')
+    ax.grid(True, linestyle='--', alpha=0.7)
+    st.pyplot(fig)
 
-def interactive_double_pendulum(theta1_initial, theta2_initial, L1, L2, m1, m2):
+# Streamlit App
+st.title('Double Pendulum Simulation')
+
+theta1_initial = st.slider('Theta1 Initial (radians)', 0.0, 2 * np.pi, np.pi / 2)
+theta2_initial = st.slider('Theta2 Initial (radians)', 0.0, 2 * np.pi, np.pi / 2)
+L1 = st.number_input('Length 1 (m)', min_value=0.1, value=1.0, step=0.1)
+L2 = st.number_input('Length 2 (m)', min_value=0.1, value=1.0, step=0.1)
+m1 = st.number_input('Mass 1 (kg)', min_value=0.1, value=1.0, step=0.1)
+m2 = st.number_input('Mass 2 (kg)', min_value=0.1, value=1.0, step=0.1)
+
+if st.button('Simulate'):
     y0 = [theta1_initial, 0, theta2_initial, 0]
     t_span = [0, 10]
     t_eval = np.linspace(0, 10, 1000)
     
     solution = simulate_double_pendulum(y0, t_span, t_eval, L1, L2, m1, m2)
     plot_double_pendulum(solution, L1, L2)
-
-def reset_values(b):
-    theta1_slider.value = np.pi / 2
-    theta2_slider.value = np.pi / 2
-    L1_input.value = 1.0
-    L2_input.value = 1.0
-    m1_input.value = 1.0
-    m2_input.value = 1.0
-
-    
-reset_button = widgets.Button(description='Reset')
-theta1_slider = widgets.FloatSlider(value=np.pi / 2, min=0, max=2 * np.pi, step=0.01, description='Theta1:')
-theta2_slider = widgets.FloatSlider(value=np.pi / 2, min=0, max=2 * np.pi, step=0.01, description='Theta2:')
-L1_input = widgets.FloatText(value=1.0, description='Length 1:')
-L2_input = widgets.FloatText(value=1.0, description='Length 2:')
-m1_input = widgets.FloatText(value=1.0, description='Mass 1:')
-m2_input = widgets.FloatText(value=1.0, description='Mass 2:')
-
-reset_button.on_click(reset_values)
-
-interactive_plot = widgets.interactive(interactive_double_pendulum, 
-                                       theta1_initial=theta1_slider, 
-                                       theta2_initial=theta2_slider, 
-                                       L1=L1_input, L2=L2_input, 
-                                       m1=m1_input, m2=m2_input)
-
-display(interactive_plot, reset_button)

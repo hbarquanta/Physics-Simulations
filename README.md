@@ -12,11 +12,12 @@ Welcome to the Physics Simulations repository! This collection includes various 
 - [Contents](#contents)
   - [Double-Slit Experiment](#double-slit-experiment)
   - [Cellular Automata](#cellular-automata)
+  - [Double Pendulum](#double-pendulum)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Introduction
-Physics simulations are powerful tools for visualizing and understanding physical processes and phenomena. This repository includes simulations such as the Double-Slit Experiment and Cellular Automata, which help illustrate core concepts in quantum mechanics and complex systems.
+Physics simulations are powerful tools for visualizing and understanding physical processes and phenomena. This repository includes simulations such as the Double-Slit Experiment, Cellular Automata, and the Double Pendulum, which help illustrate core concepts in quantum mechanics and complex systems.
 
 ## Prerequisites
 Ensure you have the following software installed:
@@ -32,6 +33,12 @@ Clone the repository and install the required libraries:
 ```bash
 git clone https://github.com/hbarquanta/Physics-Simulations.git
 cd Physics-Simulations
+```
+
+To install dependencies for a specific application, navigate to the application's directory and install the requirements:
+
+```bash
+cd applications/double_pendulum
 pip install -r requirements.txt
 ```
 
@@ -51,6 +58,16 @@ Open the notebook you are interested in from the Jupyter interface.
 
 ### Cellular Automata
 - **Celular Automata.ipynb**: This notebook explores cellular automata, including the Game of Life, illustrating how simple rules can lead to complex behaviors.
+
+### Double Pendulum
+- **[Double Pendulum Application](applications/double_pendulum/Double_Pendulum_App.py)**: This application simulates the motion of a double pendulum.
+
+  - **How to Run:**
+    ```bash
+    cd applications/double_pendulum
+    pip install -r requirements.txt
+    streamlit run Double_Pendulum_App.py
+    ```
 
 ## Contributing
 Contributions are welcome! If you would like to improve the simulations or add new ones, please fork the repository and submit a pull request. For major changes, please open an issue first to discuss what you would like to change.

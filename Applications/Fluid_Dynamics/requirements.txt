@@ -1,5 +1,5 @@
 streamlit==1.19.0
-numpy==1.24.0
+numpy==1.23.5
 matplotlib==3.7.2
 numba==0.56.4
 pillow==9.5.0

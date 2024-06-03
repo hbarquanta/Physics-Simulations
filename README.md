@@ -72,7 +72,7 @@ Physics-Simulations/
 ├── Cellular Automata.ipynb
 ├── Double_Slit_Experiment.ipynb
 ├── Double_Pendulum.ipynb
-├──Fluid_Dynamics.ipynb
+├── Fluid_Dynamics.ipynb
 └── README.md
 ```
 

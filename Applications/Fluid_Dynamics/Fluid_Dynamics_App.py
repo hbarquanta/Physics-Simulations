@@ -17,24 +17,40 @@ x = np.linspace(0, Lx, Nx)
 y = np.linspace(0, Ly, Ny)
 X, Y = np.meshgrid(x, y)
 
-# Streamlit inputs
+# Streamlit app layout
 st.title("Computational Fluid Dynamics (CFD) Simulation")
+st.markdown("""
+### Project Overview
+This project demonstrates a simulation of fluid flow around various objects using the Navier-Stokes equations. 
+You can control parameters such as kinematic viscosity and inlet velocity to observe their effects on the flow patterns.
 
-st.sidebar.header("Simulation Settings")
-show_streamlines = st.sidebar.checkbox("Show streamlines", value=True)
-nu = st.sidebar.slider(r"Kinematic viscosity ($\eta$)", min_value=0.001, max_value=0.1, value=0.01, step=0.001)
-inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
-shape = st.sidebar.selectbox("Choose object shape", ["circle", "square", "ellipse", "car", "plane"])
-
-st.sidebar.write("""
-### Instructions:
+**Instructions:**
 1. **Show Streamlines**: Toggle to show/hide streamlines in the velocity field plot.
-2. **Kinematic Viscosity (nu)**: Adjust the slider to change the kinematic viscosity, which influences the Reynolds number.
+2. **Kinematic Viscosity**: Adjust the slider to change the kinematic viscosity, which influences the Reynolds number.
 3. **Inlet Velocity**: Adjust the slider to set the velocity of the air entering from the left.
 4. **Object Shape**: Select the shape of the object within the flow (circle, square, ellipse, car, or plane).
 
-After adjusting the settings, click the "Run Simulation" button to start the simulation.
+**Click the "Run Simulation" button to start the simulation.**
+
+#### Theoretical Background
+The Navier-Stokes equations describe the motion of fluid substances and are a fundamental part of fluid mechanics. 
+These equations are derived from Newton's second law, considering the forces acting on a fluid element. 
+They are used to simulate a wide range of phenomena such as weather patterns, ocean currents, and airflow around aircraft.
+
+For more detailed information on the Navier-Stokes equations and their applications, 
+you can refer to [Wikipedia](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations).
+
+#### Author and Repository
+Created by [hbarquanta](https://github.com/hbarquanta).
+
+You can find more of my physics and computational projects on my [GitHub](https://github.com/hbarquanta/Physics-Simulations).
 """)
+
+st.sidebar.header("Simulation Settings")
+show_streamlines = st.sidebar.checkbox("Show streamlines", value=True)
+nu = st.sidebar.slider("Kinematic viscosity (ν)", min_value=0.001, max_value=0.1, value=0.01, step=0.001)
+inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
+shape = st.sidebar.selectbox("Choose object shape", ["circle", "square", "ellipse", "car", "plane"])
 
 if st.sidebar.button("Run Simulation"):
     # Define the object parameters

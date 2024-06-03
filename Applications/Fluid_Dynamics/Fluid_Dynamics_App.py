@@ -17,41 +17,37 @@ x = np.linspace(0, Lx, Nx)
 y = np.linspace(0, Ly, Ny)
 X, Y = np.meshgrid(x, y)
 
-# Streamlit app layout
+# Streamlit inputs
 st.title("Computational Fluid Dynamics (CFD) Simulation")
-st.markdown("""
-### Project Overview
-This project demonstrates a simulation of fluid flow around various objects using the Navier-Stokes equations. 
-You can control parameters such as kinematic viscosity and inlet velocity to observe their effects on the flow patterns.
-
-**Instructions:**
-1. **Show Streamlines**: Toggle to show/hide streamlines in the velocity field plot.
-2. **Kinematic Viscosity**: Adjust the slider to change the kinematic viscosity, which influences the Reynolds number.
-3. **Inlet Velocity**: Adjust the slider to set the velocity of the air entering from the left.
-4. **Object Shape**: Select the shape of the object within the flow (circle, square, ellipse, car, or plane).
-
-**Click the "Run Simulation" button to start the simulation.**
-
-#### Theoretical Background
-The Navier-Stokes equations describe the motion of fluid substances and are a fundamental part of fluid mechanics. 
-These equations are derived from Newton's second law, considering the forces acting on a fluid element. 
-They are used to simulate a wide range of phenomena such as weather patterns, ocean currents, and airflow around aircraft.
-
-For more detailed information on the Navier-Stokes equations and their applications, 
-you can refer to [Wikipedia](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations).
-
-#### Author and Repository
-Created by [hbarquanta](https://github.com/hbarquanta).
-
-You can find more of my physics and computational projects on my [GitHub](https://github.com/hbarquanta/Physics-Simulations).
-""")
 
 st.sidebar.header("Simulation Settings")
 show_streamlines = st.sidebar.checkbox("Show streamlines", value=True)
 nu = st.sidebar.slider(r"Kinematic viscosity ($\eta$)", min_value=0.001, max_value=0.1, value=0.01, step=0.001)
-inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=5.0, value=1.0, step=0.1)
+inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
 shape = st.sidebar.selectbox("Choose object shape", ["circle", "square", "ellipse", "car", "plane"])
 
+st.sidebar.write("""
+### Instructions:
+1. **Show Streamlines**: Toggle to show/hide streamlines in the velocity field plot.
+2. **Kinematic Viscosity (nu)**: Adjust the slider to change the kinematic viscosity, which influences the Reynolds number.
+3. **Inlet Velocity**: Adjust the slider to set the velocity of the air entering from the left.
+4. **Object Shape**: Select the shape of the object within the flow (circle, square, ellipse, car, or plane).
+
+After adjusting the settings, click the "Run Simulation" button to start the simulation.
+""")
+
+st.write("""
+## Computational Fluid Dynamics (CFD) Simulation
+This simulation demonstrates the flow of a fluid around various objects using the Navier-Stokes equations. Adjust the settings in the sidebar to customize the simulation and visualize the flow dynamics.
+
+### Theoretical Background
+The Navier-Stokes equations describe the motion of viscous fluid substances. These equations arise from applying Newton's second law to fluid motion, along with the assumption that the stress in the fluid is the sum of a diffusing viscous term (proportional to the gradient of velocity) and a pressure term.
+
+### Author
+This project is developed by [Your Name]. For more information and source code, visit the [GitHub repository](https://github.com/hbarquanta/Physics-Simulations).
+""")
+
+# Run simulation button
 if st.sidebar.button("Run Simulation"):
     # Define the object parameters
     object_center = (0.5, 0.5)
@@ -67,17 +63,13 @@ if st.sidebar.button("Run Simulation"):
         b = 0.1  # Semi-minor axis
         object_mask = ((X - object_center[0])**2 / a**2) + ((Y - object_center[1])**2 / b**2) < 1
     elif shape == "car":
-        car_body = (abs(X - object_center[0]) < 0.1) & (abs(Y - object_center[1]) < 0.05)
-        car_hood = (abs(X - object_center[0]) < 0.05) & (abs(Y - (object_center[1] + 0.05)) < 0.05)
-        car_wheels = ((X - (object_center[0] - 0.05))**2 + (Y - (object_center[1] - 0.05))**2 < 0.02**2) | \
-                     ((X - (object_center[0] + 0.05))**2 + (Y - (object_center[1] - 0.05))**2 < 0.02**2)
-        object_mask = car_body | car_hood | car_wheels
+        object_mask = np.zeros((Ny, Nx), dtype=bool)
+        object_mask[45:55, 80:120] = True
     elif shape == "plane":
-        plane_body = (abs(X - object_center[0]) < 0.1) & (abs(Y - object_center[1]) < 0.02)
-        plane_wing1 = (abs(X - object_center[0]) < 0.02) & (abs(Y - (object_center[1] + 0.1)) < 0.02)
-        plane_wing2 = (abs(X - object_center[0]) < 0.02) & (abs(Y - (object_center[1] - 0.1)) < 0.02)
-        plane_tail = (abs(X - (object_center[0] + 0.08)) < 0.02) & (abs(Y - (object_center[1] + 0.05)) < 0.02)
-        object_mask = plane_body | plane_wing1 | plane_wing2 | plane_tail
+        object_mask = np.zeros((Ny, Nx), dtype=bool)
+        object_mask[40:60, 90:110] = True
+        object_mask[50, 70:90] = True
+        object_mask[50, 110:130] = True
     else:
         st.error("Invalid shape! Please choose from circle, square, ellipse, car, or plane.")
         st.stop()
@@ -166,8 +158,6 @@ if st.sidebar.button("Run Simulation"):
             stream = ax1.streamplot(X, Y, u, v, color='k', linewidth=0.5, density=1.5)
         ax1.contour(X, Y, object_mask, colors='k', linewidths=2)  # Black boundary for object
 
-        progress_bar = st.progress(0)
-
         def update(frame):
             global u, v, p
             for _ in range(n_interval):
@@ -175,7 +165,8 @@ if st.sidebar.button("Run Simulation"):
                 p = compute_pressure(u, v, p, dx, dy, dt, rho, Nx, Ny)
 
             # Update velocity field
-            ax1.collections.clear()
+            for c in ax1.collections:
+                c.remove()
             ax1.clear()
             contourf1 = ax1.contourf(X, Y, np.sqrt(u**2 + v**2), cmap='jet', levels=100, extend='both')
             quiver1 = ax1.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3])
@@ -184,8 +175,9 @@ if st.sidebar.button("Run Simulation"):
             ax1.contour(X, Y, object_mask, colors='k', linewidths=2)  # Black boundary for object
             ax1.set_title(f'Velocity Field (Time step: {frame * n_interval})')
 
-            # Update progress bar
-            progress_bar.progress(frame / (nt // n_interval))
+            # Progress indication
+            if frame % (nt // n_interval // 10) == 0:  # Update progress every 10% of total frames
+                st.progress(frame * 100 // (nt // n_interval))
 
             if show_streamlines:
                 return contourf1.collections + [quiver1, stream.lines]

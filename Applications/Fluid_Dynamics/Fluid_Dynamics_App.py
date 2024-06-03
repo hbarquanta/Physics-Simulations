@@ -30,7 +30,7 @@ You can control parameters such as kinematic viscosity and inlet velocity to obs
 3. **Inlet Velocity**: Adjust the slider to set the velocity of the air entering from the left.
 4. **Object Shape**: Select the shape of the object within the flow (circle, square, ellipse, car, or plane).
 
-**Click the "Run Simulation" button to start the simulation.**
+**Click the "Run Simulation" button to start the simulation. The compilation might take up to three minutes.**
 
 #### Theoretical Background
 The Navier-Stokes equations describe the motion of fluid substances and are a fundamental part of fluid mechanics. 
@@ -48,8 +48,8 @@ You can find more of my physics and computational projects on my [GitHub](https:
 
 st.sidebar.header("Simulation Settings")
 show_streamlines = st.sidebar.checkbox("Show streamlines", value=True)
-nu = st.sidebar.slider("Kinematic viscosity (ν)", min_value=0.001, max_value=0.1, value=0.01, step=0.001)
-inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=10.0, value=1.0, step=0.1)
+nu = st.sidebar.slider(r"Kinematic viscosity ($\eta$)", min_value=0.001, max_value=0.1, value=0.01, step=0.001)
+inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=5.0, value=1.0, step=0.1)
 shape = st.sidebar.selectbox("Choose object shape", ["circle", "square", "ellipse", "car", "plane"])
 
 if st.sidebar.button("Run Simulation"):
@@ -67,9 +67,19 @@ if st.sidebar.button("Run Simulation"):
         b = 0.1  # Semi-minor axis
         object_mask = ((X - object_center[0])**2 / a**2) + ((Y - object_center[1])**2 / b**2) < 1
     elif shape == "car":
-        object_mask = (abs(X - object_center[0]) < 0.15) & (abs(Y - object_center[1]) < 0.05)
+        # Approximate a car shape using rectangles and circles
+        car_body = (abs(X - object_center[0]) < 0.1) & (abs(Y - object_center[1]) < 0.05)
+        car_hood = (abs(X - object_center[0]) < 0.05) & (abs(Y - (object_center[1] + 0.05)) < 0.05)
+        car_wheels = ((X - (object_center[0] - 0.05))**2 + (Y - (object_center[1] - 0.05))**2 < 0.02**2) | \
+                     ((X - (object_center[0] + 0.05))**2 + (Y - (object_center[1] - 0.05))**2 < 0.02**2)
+        object_mask = car_body | car_hood | car_wheels
     elif shape == "plane":
-        object_mask = (abs(X - object_center[0]) < 0.2) & (abs(Y - object_center[1]) < 0.1)
+        # Approximate a plane shape using rectangles and triangles
+        plane_body = (abs(X - object_center[0]) < 0.1) & (abs(Y - object_center[1]) < 0.02)
+        plane_wing1 = (abs(X - object_center[0]) < 0.02) & (abs(Y - (object_center[1] + 0.1)) < 0.02)
+        plane_wing2 = (abs(X - object_center[0]) < 0.02) & (abs(Y - (object_center[1] - 0.1)) < 0.02)
+        plane_tail = (abs(X - (object_center[0] + 0.08)) < 0.02) & (abs(Y - (object_center[1] + 0.05)) < 0.02)
+        object_mask = plane_body | plane_wing1 | plane_wing2 | plane_tail
     else:
         st.error("Invalid shape! Please choose from circle, square, ellipse, car, or plane.")
         st.stop()
@@ -190,9 +200,9 @@ if st.sidebar.button("Run Simulation"):
 
     # Create and display the animation
     ani = create_animation(u, v, X, Y, object_mask, nt, n_interval, show_streamlines, inlet_velocity)
-    ani.save("navier_stokes_simulation.gif", writer=PillowWriter(fps=10))
+    ani.save("navier_stokes_simulation.gif", writer=PillowWriter(fps=24))
 
-    st.image("navier_stokes_simulation.gif", caption="Navier-Stokes Simulation")
+    st.image("navier_stokes_simulation.gif", caption="Fluid Dynamics Simulation")
 
     # Display final plot
     fig, ax1 = plt.subplots(figsize=(8, 4))

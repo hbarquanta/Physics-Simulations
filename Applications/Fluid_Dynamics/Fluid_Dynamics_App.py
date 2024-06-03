@@ -17,140 +17,197 @@ x = np.linspace(0, Lx, Nx)
 y = np.linspace(0, Ly, Ny)
 X, Y = np.meshgrid(x, y)
 
-# Initialize Streamlit controls
-st.title("Navier-Stokes Simulation")
-show_streamlines = st.sidebar.checkbox("Show Streamlines", value=True)
-reynolds_number = st.sidebar.slider("Reynolds Number", min_value=1, max_value=500, value=100)
-shape = st.sidebar.selectbox("Initial Shape", ["Cylinder", "Square"])
+# Streamlit app layout
+st.title("Computational Fluid Dynamics (CFD) Simulation")
+st.markdown("""
+### Project Overview
+This project demonstrates a simulation of fluid flow around various objects using the Navier-Stokes equations. 
+You can control parameters such as kinematic viscosity and inlet velocity to observe their effects on the flow patterns.
 
-# Adjust parameters based on Reynolds number
-rho = 1.0  # Density
-nu = 1.0 / reynolds_number  # Kinematic viscosity adjusted by Reynolds number
-dt = 0.0001  # Time step size
+**Instructions:**
+1. **Show Streamlines**: Toggle to show/hide streamlines in the velocity field plot.
+2. **Kinematic Viscosity**: Adjust the slider to change the kinematic viscosity, which influences the Reynolds number.
+3. **Inlet Velocity**: Adjust the slider to set the velocity of the air entering from the left.
+4. **Object Shape**: Select the shape of the object within the flow (circle, square, ellipse, car, or plane).
 
-# Define the initial shape parameters
-if shape == "Cylinder":
-    radius = 0.1
-    cylinder_center = (0.5, 0.5)
-    cylinder_mask = (X - cylinder_center[0])**2 + (Y - cylinder_center[1])**2 < radius**2
-elif shape == "Square":
-    side = 0.2
-    square_center = (0.5, 0.5)
-    cylinder_mask = (abs(X - square_center[0]) < side / 2) & (abs(Y - square_center[1]) < side / 2)
+**Click the "Run Simulation" button to start the simulation.**
 
-cylinder_indices = np.where(cylinder_mask)
+#### Theoretical Background
+The Navier-Stokes equations describe the motion of fluid substances and are a fundamental part of fluid mechanics. 
+These equations are derived from Newton's second law, considering the forces acting on a fluid element. 
+They are used to simulate a wide range of phenomena such as weather patterns, ocean currents, and airflow around aircraft.
 
-# Initialize velocity and pressure fields
-u = np.zeros((Ny, Nx))  # x-velocity
-v = np.zeros((Ny, Nx))  # y-velocity
-p = np.zeros((Ny, Nx))  # pressure
+For more detailed information on the Navier-Stokes equations and their applications, 
+you can refer to [Wikipedia](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations).
 
-@jit(nopython=True)
-def compute_velocity(u, v, p, dx, dy, dt, rho, nu, Nx, Ny, cylinder_indices):
-    un = u.copy()
-    vn = v.copy()
+#### Author and Repository
+Created by [hbarquanta](https://github.com/hbarquanta).
 
-    # Compute the velocity field
-    for i in range(1, Nx-1):
-        for j in range(1, Ny-1):
-            u[j, i] = un[j, i] - dt * (un[j, i] * (un[j, i] - un[j, i-1]) / dx +
-                                        vn[j, i] * (un[j, i] - un[j-1, i]) / dy) - \
-                      dt / (2 * rho * dx) * (p[j, i+1] - p[j, i-1]) + \
-                      nu * dt * ((un[j, i+1] - 2 * un[j, i] + un[j, i-1]) / dx**2 +
-                                 (un[j+1, i] - 2 * un[j, i] + un[j-1, i]) / dy**2)
+You can find more of my physics and computational projects on my [GitHub](https://github.com/hbarquanta/Physics-Simulations).
+""")
 
-            v[j, i] = vn[j, i] - dt * (un[j, i] * (vn[j, i] - vn[j, i-1]) / dx +
-                                        vn[j, i] * (vn[j, i] - vn[j-1, i]) / dy) - \
-                      dt / (2 * rho * dy) * (p[j+1, i] - p[j-1, i]) + \
-                      nu * dt * ((vn[j, i+1] - 2 * vn[j, i] + vn[j, i-1]) / dx**2 +
-                                 (vn[j+1, i] - 2 * vn[j, i] + vn[j-1, i]) / dy**2)
+st.sidebar.header("Simulation Settings")
+show_streamlines = st.sidebar.checkbox("Show streamlines", value=True)
+nu = st.sidebar.slider(r"Kinematic viscosity ($\eta$)", min_value=0.001, max_value=0.1, value=0.01, step=0.001)
+inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=5.0, value=1.0, step=0.1)
+shape = st.sidebar.selectbox("Choose object shape", ["circle", "square", "ellipse", "car", "plane"])
 
-    # Apply boundary conditions
-    u[:, 0] = 1.0    # Inlet velocity
-    u[:, -1] = 0.0   # Outlet
-    v[:, 0] = 0.0
-    v[:, -1] = 0.0
-    u[0, :] = 0.0
-    u[-1, :] = 0.0
-    v[0, :] = 0.0
-    v[-1, :] = 0.0
+if st.sidebar.button("Run Simulation"):
+    # Define the object parameters
+    object_center = (0.5, 0.5)
 
-    # Apply cylinder boundary condition (no-slip)
-    for idx in range(len(cylinder_indices[0])):
-        u[cylinder_indices[0][idx], cylinder_indices[1][idx]] = 0.0
-        v[cylinder_indices[0][idx], cylinder_indices[1][idx]] = 0.0
+    if shape == "circle":
+        radius = 0.1
+        object_mask = (X - object_center[0])**2 + (Y - object_center[1])**2 < radius**2
+    elif shape == "square":
+        side = 0.2
+        object_mask = (abs(X - object_center[0]) < side / 2) & (abs(Y - object_center[1]) < side / 2)
+    elif shape == "ellipse":
+        a = 0.2  # Semi-major axis
+        b = 0.1  # Semi-minor axis
+        object_mask = ((X - object_center[0])**2 / a**2) + ((Y - object_center[1])**2 / b**2) < 1
+    elif shape == "car":
+        car_body = (abs(X - object_center[0]) < 0.1) & (abs(Y - object_center[1]) < 0.05)
+        car_hood = (abs(X - object_center[0]) < 0.05) & (abs(Y - (object_center[1] + 0.05)) < 0.05)
+        car_wheels = ((X - (object_center[0] - 0.05))**2 + (Y - (object_center[1] - 0.05))**2 < 0.02**2) | \
+                     ((X - (object_center[0] + 0.05))**2 + (Y - (object_center[1] - 0.05))**2 < 0.02**2)
+        object_mask = car_body | car_hood | car_wheels
+    elif shape == "plane":
+        plane_body = (abs(X - object_center[0]) < 0.1) & (abs(Y - object_center[1]) < 0.02)
+        plane_wing1 = (abs(X - object_center[0]) < 0.02) & (abs(Y - (object_center[1] + 0.1)) < 0.02)
+        plane_wing2 = (abs(X - object_center[0]) < 0.02) & (abs(Y - (object_center[1] - 0.1)) < 0.02)
+        plane_tail = (abs(X - (object_center[0] + 0.08)) < 0.02) & (abs(Y - (object_center[1] + 0.05)) < 0.02)
+        object_mask = plane_body | plane_wing1 | plane_wing2 | plane_tail
+    else:
+        st.error("Invalid shape! Please choose from circle, square, ellipse, car, or plane.")
+        st.stop()
 
-    return u, v
+    object_indices = np.where(object_mask)
 
-@jit(nopython=True)
-def compute_pressure(u, v, p, dx, dy, dt, rho, Nx, Ny):
-    pn = np.zeros_like(p)
+    # Initialize velocity and pressure fields
+    u = np.zeros((Ny, Nx))  # x-velocity
+    v = np.zeros((Ny, Nx))  # y-velocity
+    p = np.zeros((Ny, Nx))  # pressure
 
-    for _ in range(50):  # Iterative solver for pressure
-        pn = p.copy()
-        p[1:-1, 1:-1] = ((pn[1:-1, 2:] + pn[1:-1, :-2]) * dy**2 +
-                         (pn[2:, 1:-1] + pn[:-2, 1:-1]) * dx**2) / \
-                        (2 * (dx**2 + dy**2)) - \
-                        rho * dx**2 * dy**2 / (2 * (dx**2 + dy**2)) * \
-                        ((u[1:-1, 2:] - u[1:-1, :-2]) / (2 * dx) +
-                         (v[2:, 1:-1] - v[:-2, 1:-1]) / (2 * dy)) / dt
+    # Initialize parameters
+    rho = 1.0  # Density
+    dt = 0.0001  # Time step size
 
-        # Boundary conditions for pressure
-        p[:, -1] = p[:, -2]  # dp/dx = 0 at outlet
-        p[:, 0] = p[:, 1]    # dp/dx = 0 at inlet
-        p[0, :] = p[1, :]    # dp/dy = 0 at top
-        p[-1, :] = p[-2, :]  # dp/dy = 0 at bottom
+    @jit(nopython=True)
+    def compute_velocity(u, v, p, dx, dy, dt, rho, nu, Nx, Ny, object_indices, inlet_velocity):
+        un = u.copy()
+        vn = v.copy()
 
-    return p
+        # Compute the velocity field
+        for i in range(1, Nx-1):
+            for j in range(1, Ny-1):
+                u[j, i] = un[j, i] - dt * (un[j, i] * (un[j, i] - un[j, i-1]) / dx +
+                                            vn[j, i] * (un[j, i] - un[j-1, i]) / dy) - \
+                          dt / (2 * rho * dx) * (p[j, i+1] - p[j, i-1]) + \
+                          nu * dt * ((un[j, i+1] - 2 * un[j, i] + un[j, i-1]) / dx**2 +
+                                     (un[j+1, i] - 2 * un[j, i] + un[j-1, i]) / dy**2)
 
-# Time-stepping loop parameters
-nt = 2000  # Number of time steps
-n_interval = 10  # Interval for frames in the animation
+                v[j, i] = vn[j, i] - dt * (un[j, i] * (vn[j, i] - vn[j, i-1]) / dx +
+                                            vn[j, i] * (vn[j, i] - vn[j-1, i]) / dy) - \
+                          dt / (2 * rho * dy) * (p[j+1, i] - p[j-1, i]) + \
+                          nu * dt * ((vn[j, i+1] - 2 * vn[j, i] + vn[j, i-1]) / dx**2 +
+                                     (vn[j+1, i] - 2 * vn[j, i] + vn[j-1, i]) / dy**2)
 
-# Create the animation
-def create_animation(u, v, p, X, Y, cylinder_mask, nt, n_interval, show_streamlines):
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 8))
+        # Apply boundary conditions
+        u[:, 0] = inlet_velocity  # Inlet velocity
+        u[:, -1] = 0.0  # Outlet
+        v[:, 0] = 0.0
+        v[:, -1] = 0.0
+        u[0, :] = 0.0
+        u[-1, :] = 0.0
+        v[0, :] = 0.0
+        v[-1, :] = 0.0
 
-    # Initial plot
-    contourf1 = ax1.contourf(X, Y, np.sqrt(u**2 + v**2), cmap='jet')
-    quiver1 = ax1.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3])
-    if show_streamlines:
-        stream = ax1.streamplot(X, Y, u, v, color='k', linewidth=0.5, density=1.5)
-    contourf2 = ax2.contourf(X, Y, p, cmap='jet')
+        # Apply object boundary condition (no-slip)
+        for idx in range(len(object_indices[0])):
+            u[object_indices[0][idx], object_indices[1][idx]] = 0.0
+            v[object_indices[0][idx], object_indices[1][idx]] = 0.0
 
-    def update(frame):
-        global u, v, p
-        for _ in range(n_interval):
-            u, v = compute_velocity(u, v, p, dx, dy, dt, rho, nu, Nx, Ny, cylinder_indices)
-            p = compute_pressure(u, v, p, dx, dy, dt, rho, Nx, Ny)
+        return u, v
 
-        # Update velocity field
-        for c in ax1.collections:
-            c.remove()
-        ax1.clear()
-        contourf1 = ax1.contourf(X, Y, np.sqrt(u**2 + v**2), cmap='jet')
+    @jit(nopython=True)
+    def compute_pressure(u, v, p, dx, dy, dt, rho, Nx, Ny):
+        pn = np.zeros_like(p)
+
+        for _ in range(50):  # Iterative solver for pressure
+            pn = p.copy()
+            p[1:-1, 1:-1] = ((pn[1:-1, 2:] + pn[1:-1, :-2]) * dy**2 +
+                             (pn[2:, 1:-1] + pn[:-2, 1:-1]) * dx**2) / \
+                            (2 * (dx**2 + dy**2)) - \
+                            rho * dx**2 * dy**2 / (2 * (dx**2 + dy**2)) * \
+                            ((u[1:-1, 2:] - u[1:-1, :-2]) / (2 * dx) +
+                             (v[2:, 1:-1] - v[:-2, 1:-1]) / (2 * dy)) / dt
+
+            # Boundary conditions for pressure
+            p[:, -1] = p[:, -2]  # dp/dx = 0 at outlet
+            p[:, 0] = p[:, 1]  # dp/dx = 0 at inlet
+            p[0, :] = p[1, :]  # dp/dy = 0 at top
+            p[-1, :] = p[-2, :]  # dp/dy = 0 at bottom
+
+        return p
+
+    # Time-stepping loop parameters
+    nt = 2000  # Number of time steps
+    n_interval = 10  # Interval for frames in the animation
+
+    # Create the animation
+    def create_animation(u, v, X, Y, object_mask, nt, n_interval, show_streamlines, inlet_velocity):
+        fig, ax1 = plt.subplots(figsize=(8, 4))
+
+        # Initial plot
+        contourf1 = ax1.contourf(X, Y, np.sqrt(u**2 + v**2), cmap='jet', levels=100, extend='both')
         quiver1 = ax1.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3])
         if show_streamlines:
             stream = ax1.streamplot(X, Y, u, v, color='k', linewidth=0.5, density=1.5)
-        ax1.set_title(f'Velocity Field (Time step: {frame * n_interval})')
+        ax1.contour(X, Y, object_mask, colors='k', linewidths=2)  # Black boundary for object
 
-        # Update pressure field
-        for c in ax2.collections:
-            c.remove()
-        ax2.clear()
-        contourf2 = ax2.contourf(X, Y, p, cmap='jet')
-        ax2.set_title(f'Pressure Field (Time step: {frame * n_interval})')
+        progress_bar = st.progress(0)
 
-        if show_streamlines:
-            return contourf1.collections + contourf2.collections + [quiver1, stream.lines]
-        else:
-            return contourf1.collections + contourf2.collections + [quiver1]
+        def update(frame):
+            global u, v, p
+            for _ in range(n_interval):
+                u, v = compute_velocity(u, v, p, dx, dy, dt, rho, nu, Nx, Ny, object_indices, inlet_velocity)
+                p = compute_pressure(u, v, p, dx, dy, dt, rho, Nx, Ny)
 
-    ani = FuncAnimation(fig, update, frames=nt // n_interval, blit=True)
-    return ani
+            # Update velocity field
+            ax1.collections.clear()
+            ax1.clear()
+            contourf1 = ax1.contourf(X, Y, np.sqrt(u**2 + v**2), cmap='jet', levels=100, extend='both')
+            quiver1 = ax1.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3])
+            if show_streamlines:
+                stream = ax1.streamplot(X, Y, u, v, color='k', linewidth=0.5, density=1.5)
+            ax1.contour(X, Y, object_mask, colors='k', linewidths=2)  # Black boundary for object
+            ax1.set_title(f'Velocity Field (Time step: {frame * n_interval})')
 
-# Create and display the animation
-ani = create_animation(u, v, p, X, Y, cylinder_mask, nt, n_interval, show_streamlines)
-ani.save("navier_stokes_simulation.gif", writer=PillowWriter(fps=10))
+            # Update progress bar
+            progress_bar.progress(frame / (nt // n_interval))
 
-st.image("navier_stokes_simulation.gif", caption="Navier-Stokes Simulation")
+            if show_streamlines:
+                return contourf1.collections + [quiver1, stream.lines]
+            else:
+                return contourf1.collections + [quiver1]
+
+        ani = FuncAnimation(fig, update, frames=nt // n_interval, blit=True)
+        return ani
+
+    # Create and display the animation
+    ani = create_animation(u, v, X, Y, object_mask, nt, n_interval, show_streamlines, inlet_velocity)
+    ani.save("navier_stokes_simulation.gif", writer=PillowWriter(fps=24))
+
+    st.image("navier_stokes_simulation.gif", caption="Navier-Stokes Simulation")
+
+    # Display final plot
+    fig, ax1 = plt.subplots(figsize=(8, 4))
+    contourf1 = ax1.contourf(X, Y, np.sqrt(u**2 + v**2), cmap='jet', levels=100, extend='both')
+    quiver1 = ax1.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3])
+    if show_streamlines:
+        stream = ax1.streamplot(X, Y, u, v, color='k', linewidth=0.5, density=1.5)
+    ax1.contour(X, Y, object_mask, colors='k', linewidths=2)  # Black boundary for object
+    ax1.set_title(f'Final Velocity Field')
+
+    st.pyplot(fig)

@@ -36,18 +36,6 @@ st.sidebar.write("""
 After adjusting the settings, click the "Run Simulation" button to start the simulation.
 """)
 
-st.write("""
-## Computational Fluid Dynamics (CFD) Simulation
-This simulation demonstrates the flow of a fluid around various objects using the Navier-Stokes equations. Adjust the settings in the sidebar to customize the simulation and visualize the flow dynamics.
-
-### Theoretical Background
-The Navier-Stokes equations describe the motion of viscous fluid substances. These equations arise from applying Newton's second law to fluid motion, along with the assumption that the stress in the fluid is the sum of a diffusing viscous term (proportional to the gradient of velocity) and a pressure term.
-
-### Author
-This project is developed by [Your Name]. For more information and source code, visit the [GitHub repository](https://github.com/hbarquanta/Physics-Simulations).
-""")
-
-# Run simulation button
 if st.sidebar.button("Run Simulation"):
     # Define the object parameters
     object_center = (0.5, 0.5)
@@ -63,13 +51,9 @@ if st.sidebar.button("Run Simulation"):
         b = 0.1  # Semi-minor axis
         object_mask = ((X - object_center[0])**2 / a**2) + ((Y - object_center[1])**2 / b**2) < 1
     elif shape == "car":
-        object_mask = np.zeros((Ny, Nx), dtype=bool)
-        object_mask[45:55, 80:120] = True
+        object_mask = (abs(X - object_center[0]) < 0.15) & (abs(Y - object_center[1]) < 0.05)
     elif shape == "plane":
-        object_mask = np.zeros((Ny, Nx), dtype=bool)
-        object_mask[40:60, 90:110] = True
-        object_mask[50, 70:90] = True
-        object_mask[50, 110:130] = True
+        object_mask = (abs(X - object_center[0]) < 0.2) & (abs(Y - object_center[1]) < 0.1)
     else:
         st.error("Invalid shape! Please choose from circle, square, ellipse, car, or plane.")
         st.stop()
@@ -150,6 +134,7 @@ if st.sidebar.button("Run Simulation"):
     # Create the animation
     def create_animation(u, v, X, Y, object_mask, nt, n_interval, show_streamlines, inlet_velocity):
         fig, ax1 = plt.subplots(figsize=(8, 4))
+        progress_bar = st.progress(0)
 
         # Initial plot
         contourf1 = ax1.contourf(X, Y, np.sqrt(u**2 + v**2), cmap='jet', levels=100, extend='both')
@@ -177,7 +162,7 @@ if st.sidebar.button("Run Simulation"):
 
             # Progress indication
             if frame % (nt // n_interval // 10) == 0:  # Update progress every 10% of total frames
-                st.progress(frame * 100 // (nt // n_interval))
+                progress_bar.progress(frame * 100 // (nt // n_interval))
 
             if show_streamlines:
                 return contourf1.collections + [quiver1, stream.lines]
@@ -189,7 +174,7 @@ if st.sidebar.button("Run Simulation"):
 
     # Create and display the animation
     ani = create_animation(u, v, X, Y, object_mask, nt, n_interval, show_streamlines, inlet_velocity)
-    ani.save("navier_stokes_simulation.gif", writer=PillowWriter(fps=24))
+    ani.save("navier_stokes_simulation.gif", writer=PillowWriter(fps=10))
 
     st.image("navier_stokes_simulation.gif", caption="Navier-Stokes Simulation")
 

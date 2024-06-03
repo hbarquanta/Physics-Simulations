@@ -116,8 +116,8 @@ Open the notebook you are interested in from the Jupyter interface.
     pip install -r requirements.txt
     streamlit run Fluid_Dynamics_App.py
     ```
-  - **Live Demo**: Check out the live demo [here](https://physics-simulations-fluiddynamics.streamlit.app/).
-  - **Animations**: View the animations [here](https://github.com/hbarquanta/Physics-Simulations/tree/main/Animations/navier_stokes_simulation.gif).
+  - **Live Demo**: Check out the live demo [here](https://physics-simulations-fluid-dynamics.streamlit.app/).
+  - **Animations**: View the animations [here](https://github.com/hbarquanta/Physics-Simulations/tree/main/Animations/fluid_dynamics_simulation.gif).
 
 ## Contributing
 Contributions are welcome! If you would like to improve the simulations or add new ones, please fork the repository and submit a pull request. For major changes, please open an issue first to discuss what you would like to change.

@@ -49,7 +49,7 @@ You can find more of my physics and computational projects on my [GitHub](https:
 st.sidebar.header("Simulation Settings")
 show_streamlines = st.sidebar.checkbox("Show streamlines", value=True)
 nu = st.sidebar.slider("Kinematic viscosity (ν)", min_value=0.001, max_value=0.1, value=0.01, step=0.001)
-inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
+inlet_velocity = st.sidebar.slider("Inlet velocity", min_value=0.1, max_value=10.0, value=1.0, step=0.1)
 shape = st.sidebar.selectbox("Choose object shape", ["circle", "square", "ellipse", "car", "plane"])
 
 if st.sidebar.button("Run Simulation"):

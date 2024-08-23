@@ -67,6 +67,7 @@ Physics-Simulations/
 │   ├── automata_simulation.gif
 │   ├── double_pendulum_simulation.gif
 │   ├── double_slit_simulation.gif
+│   ├── Magnetism_simulation.gif
 │   ├── navier_stokes_simulation.gif
 │   └── ...
 ├── Applications/
@@ -142,6 +143,6 @@ Open the notebook you are interested in from the Jupyter interface.
     streamlit run Magnetism_App.py
     ```
   - **Live Demo**: Check out the live demo [here](https://physics-simulations-magnetism.streamlit.app/).
-
+  - **Animations**: View the animations [here](https://github.com/hbarquanta/Physics-Simulations/tree/main/Animations/Magnetism_simulation.gif).
 ## Contributing
 Contributions are welcome! If you would like to improve the simulations or add new ones, please fork the repository and submit a pull request. 

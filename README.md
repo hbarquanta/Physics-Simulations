@@ -1,6 +1,3 @@
-Certainly! Here's the updated README file with the new information about the Magnetism app included in the same style as the rest of your projects:
-
-```markdown
 # Physics Simulations
 
 ## Overview
